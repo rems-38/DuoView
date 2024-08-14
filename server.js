@@ -9,7 +9,7 @@ const wss = new WebSocket.Server({ server });
 
 let currentTime = 0;
 let isPlaying = false;
-let clientsConnected = 0; // Compte le nombre de clients connectés
+let clientsConnected = 0;
 let intervalId = null;
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -51,38 +51,18 @@ wss.on('connection', ws => {
     // Synchroniser le nouveau client avec l'état actuel de la vidéo
     ws.send(JSON.stringify({ event: 'sync', currentTime, isPlaying }));
 
-    // Si deux clients sont connectés, ils sont synchronisés à l'état actuel
-    if (clientsConnected === 2 && isPlaying) {
-        ws.send(JSON.stringify({ event: 'play' }));
-    }
-
     ws.on('close', () => {
         clientsConnected--;
-        console.log(`Client disconnected. Pausing video. Total clients: ${clientsConnected}`);
-        controlPlayback('pause');
-    });
-
-    // Les clients ne peuvent plus envoyer de commandes play/pause
-    ws.on('message', message => {
-        const data = JSON.parse(message);
-
-        if (data.event === 'seek') {
-            currentTime = data.currentTime;
-            console.log(`Seek event received. Updating current time to ${currentTime}. Broadcasting to all clients.`);
-            wss.clients.forEach(client => {
-                if (client.readyState === WebSocket.OPEN) {
-                    client.send(JSON.stringify({ event: 'seek', currentTime }));
-                }
-            });
-        }
+        console.log(`Client disconnected. Total clients: ${clientsConnected}`);
+        // controlPlayback('pause');
     });
 });
 
 // Contrôle de la lecture et de la pause depuis le serveur 
 function controlPlayback(action) {
     if (action === 'play') {
-        isPlaying = true;
         console.log('Play command sent by the server.');
+        isPlaying = true;
         startTimer();
         wss.clients.forEach(client => {
             if (client.readyState === WebSocket.OPEN) {
@@ -90,12 +70,19 @@ function controlPlayback(action) {
             }
         });
     } else if (action === 'pause') {
-        isPlaying = false;
         console.log('Pause command sent by the server.');
+        isPlaying = false;
         stopTimer();
         wss.clients.forEach(client => {
             if (client.readyState === WebSocket.OPEN) {
                 client.send(JSON.stringify({ event: 'pause' }));
+            }
+        });
+    } else if (action === 'sync') {
+        console.log('Sync command received. Syncing all clients.');
+        wss.clients.forEach(client => {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(JSON.stringify({ event: 'sync', currentTime, isPlaying }));
             }
         });
     }
@@ -118,34 +105,19 @@ function stopTimer() {
     }
 }
 
-// Synchronisation manuelle de tous les clients
-function syncClients() {
-    console.log('Sync command received. Syncing all clients.');
-    wss.clients.forEach(client => {
-        if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({ event: 'sync', currentTime, isPlaying }));
-        }
-    });
-}
-
 // Ecoute des commandes en ligne de commande pour contrôler la vidéo
 process.stdin.on('data', (data) => {
     const command = data.toString().trim();
+    const availableCommands = ['play', 'pause', 'sync'];
 
-    if (command === 'play') {
-        if (clientsConnected === 2) {
-            controlPlayback('play');
-        } else {
-            console.log('Cannot play. Waiting for two clients to be connected.');
-        }
-    } else if (command === 'pause') {
-        controlPlayback('pause');
-    } else if (command === 'sync') {
-        syncClients();
+    if (availableCommands.includes(command)) {
+        controlPlayback(command);
     } else {
-        console.log('Unknown command. Use "play" or "pause".');
+        console.log('Invalid command. Available commands: ' + availableCommands.join(', '));
     }
 });
+
+
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
