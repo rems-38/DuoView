@@ -10,6 +10,7 @@ const wss = new WebSocket.Server({ server });
 let currentTime = 0;
 let isPlaying = false;
 let clientsConnected = 0; // Compte le nombre de clients connectés
+let intervalId = null;
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -47,20 +48,18 @@ wss.on('connection', ws => {
     clientsConnected++;
     console.log(`New client connected. Total clients: ${clientsConnected}`);
 
-    // Si deux clients sont connectés, ils sont synchronisés à l'état actuel
-    if (clientsConnected === 2) {
-        ws.send(JSON.stringify({ event: 'sync', currentTime, isPlaying }));
+    // Synchroniser le nouveau client avec l'état actuel de la vidéo
+    ws.send(JSON.stringify({ event: 'sync', currentTime, isPlaying }));
 
-        if (isPlaying) {
-            ws.send(JSON.stringify({ event: 'play' }));
-        }
-    } else {
-        ws.send(JSON.stringify({ event: 'wait', message: 'Waiting for another user to connect...' }));
+    // Si deux clients sont connectés, ils sont synchronisés à l'état actuel
+    if (clientsConnected === 2 && isPlaying) {
+        ws.send(JSON.stringify({ event: 'play' }));
     }
 
     ws.on('close', () => {
         clientsConnected--;
-        console.log(`Client disconnected. Total clients: ${clientsConnected}`);
+        console.log(`Client disconnected. Pausing video. Total clients: ${clientsConnected}`);
+        controlPlayback('pause');
     });
 
     // Les clients ne peuvent plus envoyer de commandes play/pause
@@ -79,11 +78,12 @@ wss.on('connection', ws => {
     });
 });
 
-// Fonction pour contrôler la lecture et la pause depuis le serveur uniquement
+// Contrôle de la lecture et de la pause depuis le serveur 
 function controlPlayback(action) {
     if (action === 'play') {
         isPlaying = true;
         console.log('Play command sent by the server.');
+        startTimer();
         wss.clients.forEach(client => {
             if (client.readyState === WebSocket.OPEN) {
                 client.send(JSON.stringify({ event: 'play' }));
@@ -92,12 +92,40 @@ function controlPlayback(action) {
     } else if (action === 'pause') {
         isPlaying = false;
         console.log('Pause command sent by the server.');
+        stopTimer();
         wss.clients.forEach(client => {
             if (client.readyState === WebSocket.OPEN) {
                 client.send(JSON.stringify({ event: 'pause' }));
             }
         });
     }
+}
+
+// Démarre l'incrémentation de currentTime
+function startTimer() {
+    if (intervalId === null) {
+        intervalId = setInterval(() => {
+            currentTime += 1; // Incrémente le temps de 1 seconde
+        }, 1000); // Mise à jour toutes les secondes
+    }
+}
+
+// Arrête l'incrémentation de currentTime
+function stopTimer() {
+    if (intervalId !== null) {
+        clearInterval(intervalId);
+        intervalId = null;
+    }
+}
+
+// Synchronisation manuelle de tous les clients
+function syncClients() {
+    console.log('Sync command received. Syncing all clients.');
+    wss.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({ event: 'sync', currentTime, isPlaying }));
+        }
+    });
 }
 
 // Ecoute des commandes en ligne de commande pour contrôler la vidéo
@@ -112,6 +140,8 @@ process.stdin.on('data', (data) => {
         }
     } else if (command === 'pause') {
         controlPlayback('pause');
+    } else if (command === 'sync') {
+        syncClients();
     } else {
         console.log('Unknown command. Use "play" or "pause".');
     }
