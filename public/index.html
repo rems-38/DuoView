@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synchronized Video</title>
+</head>
+<body>
+    <video id="video" controls style="pointer-events: none;">
+        <source src="/video" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <script>
+        const video = document.getElementById('video');
+        const ws = new WebSocket(`ws://${window.location.host}`);
+
+        let isSeeking = false;
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+
+            if (data.event === 'sync') {
+                console.log('Received sync event:', data);
+                isSeeking = true;
+                video.currentTime = data.currentTime;
+                if (data.isPlaying) {
+                    video.play();
+                } else {
+                    video.pause();
+                }
+                isSeeking = false;
+            }
+
+            if (data.event === 'play') {
+                console.log('Received play event');
+                video.play();
+            }
+
+            if (data.event === 'pause') {
+                console.log('Received pause event');
+                video.pause();
+            }
+
+            if (data.event === 'seek') {
+                console.log('Received seek event, updating current time to', data.currentTime);
+                isSeeking = true;
+                video.currentTime = data.currentTime;
+                isSeeking = false;
+            }
+
+            if (data.event === 'wait') {
+                console.log('Waiting for another user to connect...');
+                alert(data.message);
+            }
+        };
+
+        // Désactiver les événements play, pause et seek côté client
+        video.onplay = null;
+        video.onpause = null;
+        video.ontimeupdate = null;
+    </script>
+</body>
+</html>
