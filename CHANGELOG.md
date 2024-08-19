@@ -2,6 +2,16 @@
 
 Toutes les modifications notables de ce projet seront documentées dans ce fichier.
 
+## [1.0.6]
+
+### Ajouté
+
+- Ajout du contrôle play/pause par les clients
+
+### Bugs connus
+
+- Problème de latence lors de la lecture des vidéos
+
 ## [1.0.5]
 
 ### Modifié

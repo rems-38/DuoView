@@ -104,6 +104,18 @@ wss.on('connection', ws => {
     // Initialiser le nouveau client avec l'état actuel de la vidéo
     ws.send(JSON.stringify({ event: 'time', currentTime }));
 
+    ws.on('message', message => {
+        const data = JSON.parse(message);
+
+        if (data.event === 'play') {
+            console.log('Play command received from client.');
+            controlPlayback('play');
+        } else if (data.event === 'pause') {
+            console.log('Pause command received from client.');
+            controlPlayback('pause');
+        }
+    });
+
     ws.on('close', () => {
         clientsConnected--;
         console.log(`Client disconnected. Total clients: ${clientsConnected}`);

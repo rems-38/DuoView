@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Synchronized Video</title>
+    <title>DuoView</title>
 </head>
 <body>
     <video id="video" controls>
@@ -14,6 +14,10 @@
     <script>
         const video = document.getElementById('video');
         const ws = new WebSocket(`ws://${window.location.host}`);
+
+        ws.onopen = () => {
+            console.log('Connected to WebSocket server');
+        };
 
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
@@ -36,17 +40,19 @@
                 console.log('Received pause event');
                 video.pause();
             }
-
-            if (data.event === 'time') {
-                console.log('Received time event:', data);
-
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'time';
-                input.value = data.currentTime;
-                document.body.appendChild(input);
-            }
         };
+
+        video.addEventListener('play', () => {
+            event.preventDefault();
+            console.log('Sending play event')
+            ws.send(JSON.stringify({ event: 'play' }));
+        });
+
+        video.addEventListener('pause', () => {
+            event.preventDefault();
+            console.log('Sending pause event')
+            ws.send(JSON.stringify({ event: 'pause' }));
+        });
     </script>
 </body>
 </html>
