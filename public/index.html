@@ -20,7 +20,11 @@
 
             if (data.event === 'sync') {
                 console.log('Received sync event:', data);
-                video.currentTime = data.currentTime;
+
+                const offset = document.getElementsByName('time')[0].value;
+                if (offset) {
+                    video.currentTime = data.currentTime - offset;
+                } else { video.currentTime = data.currentTime; }
             }
 
             if (data.event === 'play') {
@@ -31,6 +35,16 @@
             if (data.event === 'pause') {
                 console.log('Received pause event');
                 video.pause();
+            }
+
+            if (data.event === 'time') {
+                console.log('Received time event:', data);
+
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'time';
+                input.value = data.currentTime;
+                document.body.appendChild(input);
             }
         };
     </script>

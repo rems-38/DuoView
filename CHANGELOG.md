@@ -2,6 +2,16 @@
 
 Toutes les modifications notables de ce projet seront documentées dans ce fichier.
 
+## [1.0.5]
+
+### Modifié
+
+- Amélioration du transcoding : si déjà en cours, téléchargement à partir du temps courant
+
+### Corrigé
+
+- Problème de synchronisation sur les nouveaux clients corrigé
+
 ## [1.0.4]
 
 ### Ajouté

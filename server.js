@@ -38,6 +38,7 @@ app.get('/video', (req, res) => {
         // Transcoding en temps réel vers MP4
         const ffmpeg = spawn('ffmpeg', [
             '-i', videoPath,
+            '-ss', currentTime,    // Démarrer la lecture à partir de currentTime
             '-f', 'mp4',        // Format de sortie
             '-vcodec', 'libx264',  // Codec vidéo
             '-preset', 'fast',     // Préréglage pour la vitesse
@@ -58,7 +59,7 @@ app.get('/video', (req, res) => {
         ffmpeg.stdout.pipe(res);
 
         ffmpeg.stderr.on('data', (data) => {
-            console.error(`FFmpeg stderr: ${data}`);
+            // console.error(`FFmpeg stderr: ${data}`);
         });
 
         ffmpeg.on('close', (code) => {
@@ -101,7 +102,7 @@ wss.on('connection', ws => {
     console.log(`New client connected. Total clients: ${clientsConnected}`);
 
     // Initialiser le nouveau client avec l'état actuel de la vidéo
-    ws.send(JSON.stringify({ event: 'sync', currentTime, isPlaying }));
+    ws.send(JSON.stringify({ event: 'time', currentTime }));
 
     ws.on('close', () => {
         clientsConnected--;
@@ -138,7 +139,7 @@ function controlPlayback(action) {
         console.log('Sync command received. Syncing all clients.');
         wss.clients.forEach(client => {
             if (client.readyState === WebSocket.OPEN) {
-                client.send(JSON.stringify({ event: 'sync', currentTime, isPlaying }));
+                client.send(JSON.stringify({ event: 'sync', currentTime }));
             }
         });
     }
