@@ -2,7 +2,8 @@ const express = require('express');
 const WebSocket = require('ws');
 const path = require('path');
 const fs = require('fs');
-const req = require('express/lib/request');
+// const req = require('express/lib/request'); 
+const { spawn } = require('child_process');
 
 const app = express();
 const server = require('http').createServer(app);
@@ -31,35 +32,67 @@ app.use((req, res, next) => {
 });
 
 app.get('/video', (req, res) => {
-    const stat = fs.statSync(videoPath);
-    const fileSize = stat.size;
-    const range = req.headers.range;
+    const ext = path.extname(videoPath).toLowerCase();
 
-    // Extraire l'extension du fichier
-    const fileExt = path.extname(videoPath).toLowerCase();
-    contentType = mimeTypes[fileExt] || 'application/octet-stream'; // Utiliser un type par défaut si non trouvé
+    if (ext === '.avi' || ext === '.mkv') {
+        // Transcoding en temps réel vers MP4
+        const ffmpeg = spawn('ffmpeg', [
+            '-i', videoPath,
+            '-f', 'mp4',        // Format de sortie
+            '-vcodec', 'libx264',  // Codec vidéo
+            '-preset', 'fast',     // Préréglage pour la vitesse
+            '-movflags', 'frag_keyframe+empty_moov',
+            '-r', '25',            // Frame rate
+            '-g', '52',            // Intervalle de groupes d'images
+            '-sc_threshold', '0',
+            '-c:a', 'aac',         // Codec audio
+            '-b:a', '128k',
+            '-bufsize', '8192k',   // Taille du buffer
+            '-f', 'mp4',           // Format du conteneur
+            'pipe:1'               // Sortie vers le pipe
+        ]);
 
-    if (range) {
-        const parts = range.replace(/bytes=/, "").split("-");
-        const start = parseInt(parts[0], 10);
-        const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
-        const chunksize = (end - start) + 1;
-        const file = fs.createReadStream(videoPath, { start, end });
-        const head = {
-            'Content-Range': `bytes ${start}-${end}/${fileSize}`,
-            'Accept-Ranges': 'bytes',
-            'Content-Length': chunksize,
-            'Content-Type': contentType,
-        };
-        res.writeHead(206, head);
-        file.pipe(res);
+        res.setHeader('Content-Type', 'video/mp4');
+
+        // Envoyer la sortie FFmpeg directement à la réponse HTTP
+        ffmpeg.stdout.pipe(res);
+
+        ffmpeg.stderr.on('data', (data) => {
+            console.error(`FFmpeg stderr: ${data}`);
+        });
+
+        ffmpeg.on('close', (code) => {
+            console.log(`FFmpeg process exited with code ${code}`);
+        });
+
     } else {
-        const head = {
-            'Content-Length': fileSize,
-            'Content-Type': contentType,
-        };
-        res.writeHead(200, head);
-        fs.createReadStream(videoPath).pipe(res);
+        // Gérer les vidéos mp4 de manière classique
+        const stat = fs.statSync(videoPath);
+        const fileSize = stat.size;
+        const range = req.headers.range;
+
+        if (range) {
+            const parts = range.replace(/bytes=/, "").split("-");
+            const start = parseInt(parts[0], 10);
+            const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+            const chunksize = (end - start) + 1;
+            const file = fs.createReadStream(videoPath, { start, end });
+            const head = {
+                'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+                'Accept-Ranges': 'bytes',
+                'Content-Length': chunksize,
+                'Content-Type': 'video/mp4',
+            };
+            res.writeHead(206, head);
+            file.pipe(res);
+        } else {
+            const head = {
+                'Content-Length': fileSize,
+                'Content-Type': 'video/mp4',
+            };
+            res.writeHead(200, head);
+            fs.createReadStream(videoPath).pipe(res);
+        }
     }
 });
 
@@ -68,7 +101,7 @@ wss.on('connection', ws => {
     console.log(`New client connected. Total clients: ${clientsConnected}`);
 
     // Initialiser le nouveau client avec l'état actuel de la vidéo
-    ws.send(JSON.stringify({ event: 'init', currentTime, isPlaying, mimeType: contentType }));
+    ws.send(JSON.stringify({ event: 'sync', currentTime, isPlaying }));
 
     ws.on('close', () => {
         clientsConnected--;

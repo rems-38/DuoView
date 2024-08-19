@@ -2,6 +2,12 @@
 
 Toutes les modifications notables de ce projet seront documentées dans ce fichier.
 
+## [1.0.4]
+
+### Ajouté
+
+- Transcoding en temps réel des vidéos AVI et MKV vers MP4
+
 ## [1.0.3]
 
 ### Ajouté
