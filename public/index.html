@@ -6,8 +6,8 @@
     <title>Synchronized Video</title>
 </head>
 <body>
-    <video id="video" controls style="pointer-events: none;">
-        <source src="/video" type="video/mp4">
+    <video id="video" controls>
+        <source src="/video">
         Your browser does not support the video tag.
     </video>
 
@@ -21,6 +21,11 @@
             if (data.event === 'sync') {
                 console.log('Received sync event:', data);
                 video.currentTime = data.currentTime;
+
+                if (data.mimeType) {
+                    const source = document.getElementById('source');
+                    source.setAttribute('type', data.mimeType);
+                }
             }
 
             if (data.event === 'play') {

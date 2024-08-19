@@ -2,23 +2,42 @@ const express = require('express');
 const WebSocket = require('ws');
 const path = require('path');
 const fs = require('fs');
+const req = require('express/lib/request');
 
 const app = express();
 const server = require('http').createServer(app);
 const wss = new WebSocket.Server({ server });
 
+let videoPath = '';
+let contentType = '';
 let currentTime = 0;
 let isPlaying = false;
 let clientsConnected = 0;
 let intervalId = null;
 
+const mimeTypes = {
+    '.mp4': 'video/mp4',
+    '.avi': 'video/x-msvideo',
+    '.mkv': 'video/x-matroska',
+};
+
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use((req, res, next) => {
+    if (!videoPath) {
+        return res.status(400).send('No video selected. Please select a video.');
+    }
+    next();
+});
+
 app.get('/video', (req, res) => {
-    const videoPath = path.join(__dirname, 'videos', 'video.mp4');
     const stat = fs.statSync(videoPath);
     const fileSize = stat.size;
     const range = req.headers.range;
+
+    // Extraire l'extension du fichier
+    const fileExt = path.extname(videoPath).toLowerCase();
+    contentType = mimeTypes[fileExt] || 'application/octet-stream'; // Utiliser un type par défaut si non trouvé
 
     if (range) {
         const parts = range.replace(/bytes=/, "").split("-");
@@ -30,14 +49,14 @@ app.get('/video', (req, res) => {
             'Content-Range': `bytes ${start}-${end}/${fileSize}`,
             'Accept-Ranges': 'bytes',
             'Content-Length': chunksize,
-            'Content-Type': 'video/mp4',
+            'Content-Type': contentType,
         };
         res.writeHead(206, head);
         file.pipe(res);
     } else {
         const head = {
             'Content-Length': fileSize,
-            'Content-Type': 'video/mp4',
+            'Content-Type': contentType,
         };
         res.writeHead(200, head);
         fs.createReadStream(videoPath).pipe(res);
@@ -48,8 +67,8 @@ wss.on('connection', ws => {
     clientsConnected++;
     console.log(`New client connected. Total clients: ${clientsConnected}`);
 
-    // Synchroniser le nouveau client avec l'état actuel de la vidéo
-    ws.send(JSON.stringify({ event: 'sync', currentTime, isPlaying }));
+    // Initialiser le nouveau client avec l'état actuel de la vidéo
+    ws.send(JSON.stringify({ event: 'init', currentTime, isPlaying, mimeType: contentType }));
 
     ws.on('close', () => {
         clientsConnected--;
@@ -61,6 +80,10 @@ wss.on('connection', ws => {
 // Contrôle de la lecture et de la pause depuis le serveur 
 function controlPlayback(action) {
     if (action === 'play') {
+        if (!videoPath) {
+            console.log('No video selected. Cannot play.');
+            return;
+        }
         console.log('Play command sent by the server.');
         isPlaying = true;
         startTimer();
@@ -105,6 +128,20 @@ function stopTimer() {
     }
 }
 
+function selectVideo() {
+    process.stdout.write('Enter the path of the video file: ');
+    process.stdin.once('data', (data) => {
+        videoPath = data.toString().trim();
+        
+        if (!fs.existsSync(videoPath)) {
+            console.log('File not found. Please enter a valid file path.');
+            selectVideo();
+        } else {
+            console.log(`Video selected: ${videoPath}`);
+        }
+    })
+}
+
 // Ecoute des commandes en ligne de commande pour contrôler la vidéo
 process.stdin.on('data', (data) => {
     const command = data.toString().trim();
@@ -122,4 +159,5 @@ process.stdin.on('data', (data) => {
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+    selectVideo();
 });

@@ -2,6 +2,16 @@
 
 Toutes les modifications notables de ce projet seront documentées dans ce fichier.
 
+## [1.0.3]
+
+### Ajouté
+
+- Sélection de la vidéo à lire via le serveur
+
+### En cours
+
+- Acceptation de différent format de vidéo (mp4, mkv, avi, etc.)
+
 ## [1.0.2]
 
 ### Modifié
