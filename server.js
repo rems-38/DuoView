@@ -1,13 +1,17 @@
 const express = require('express');
+const http = require('http');
 const WebSocket = require('ws');
+const { Server } = require('socket.io');
 const path = require('path');
 const fs = require('fs');
 // const req = require('express/lib/request'); 
 const { spawn } = require('child_process');
+const moment = require('moment');
 
 const app = express();
-const server = require('http').createServer(app);
+const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
+const io = new Server(server);
 
 let videoPath = '';
 let contentType = '';
@@ -101,6 +105,22 @@ app.get('/video', (req, res) => {
             fs.createReadStream(videoPath).pipe(res);
         }
     }
+});
+
+io.on('connection', socket => {
+    socket.on('user-connected', (username) => {
+        socket.username = username;
+        io.emit('system-message', `${username} s'est connecté`);
+    });
+
+    socket.on('chat-message', (data) => {
+        const time = moment().format('HH:mm');
+        io.emit('chat-message', { ...data, time });
+    });
+
+    socket.on('disconnect', () => {
+        io.emit('system-message', `${socket.username} s'est déconnecté`);
+    });
 });
 
 wss.on('connection', ws => {

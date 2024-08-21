@@ -2,6 +2,13 @@
 
 Toutes les modifications notables de ce projet seront documentées dans ce fichier.
 
+## [1.0.8]
+
+### Ajouté
+
+- Système de chat entre les utilisateurs
+
+
 ## [1.0.7]
 
 ### Ajouté
