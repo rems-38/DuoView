@@ -38,19 +38,24 @@ app.get('/video', (req, res) => {
         // Transcoding en temps réel vers MP4
         const ffmpeg = spawn('ffmpeg', [
             '-i', videoPath,
-            '-ss', currentTime,    // Démarrer la lecture à partir de currentTime
-            '-f', 'mp4',        // Format de sortie
-            '-vcodec', 'libx264',  // Codec vidéo
-            '-preset', 'fast',     // Préréglage pour la vitesse
+            '-ss', currentTime,		// Démarrer la lecture à partir de currentTime
+            '-f', 'mp4',			// Format de sortie
+            '-vcodec', 'libx264',	// Codec vidéo
+            '-preset', 'fast',		// Préréglage pour la vitesse
             '-movflags', 'frag_keyframe+empty_moov',
-            '-r', '25',            // Frame rate
-            '-g', '52',            // Intervalle de groupes d'images
+            '-r', '30',				// Frame rate
+            '-g', '52',				// Intervalle de groupes d'images
             '-sc_threshold', '0',
-            '-c:a', 'aac',         // Codec audio
+            '-c:a', 'aac',			// Codec audio
             '-b:a', '128k',
-            '-bufsize', '8192k',   // Taille du buffer
-            '-f', 'mp4',           // Format du conteneur
-            'pipe:1'               // Sortie vers le pipe
+            '-c:v', 'libx264',
+            '-tune', 'zerolatency',
+            '-vf', 'scale=640:-2',
+            '-crf', '28',
+            '-max_muxing_queue_size', '9999',
+            '-bufsize', '20m',		// Taille du buffer
+            '-s', '1280x720',		// Résolution
+            'pipe:1'				// Sortie vers le pipe
         ]);
 
         res.setHeader('Content-Type', 'video/mp4');
@@ -59,6 +64,7 @@ app.get('/video', (req, res) => {
         ffmpeg.stdout.pipe(res);
 
         ffmpeg.stderr.on('data', (data) => {
+            // 
             // console.error(`FFmpeg stderr: ${data}`);
         });
 
@@ -161,8 +167,8 @@ function controlPlayback(action) {
 function startTimer() {
     if (intervalId === null) {
         intervalId = setInterval(() => {
-            currentTime += 1; // Incrémente le temps de 1 seconde
-        }, 1000); // Mise à jour toutes les secondes
+            currentTime += 0.5; // Incrémente le temps de 1/2 seconde
+        }, 500); // Mise à jour toutes les 0.5 secondes
     }
 }
 

@@ -6,17 +6,20 @@
     <title>DuoView</title>
 </head>
 <body>
-    <video id="video" controls>
+    <div id="loading" style="display: none;">Loading...</div>
+    <video id="video" controls preload="auto">
         <source src="/video" type="video/mp4">
         Your browser does not support the video tag.
     </video>
 
     <script>
         const video = document.getElementById('video');
+        const loading = document.getElementById('loading');
         const ws = new WebSocket(`ws://${window.location.host}`);
 
         ws.onopen = () => {
             console.log('Connected to WebSocket server');
+            checkBuffering();
         };
 
         ws.onmessage = (event) => {
@@ -40,6 +43,16 @@
                 console.log('Received pause event');
                 video.pause();
             }
+
+            if (data.event === 'time') {
+                console.log('Received time event:', data);
+
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'time';
+                input.value = data.currentTime;
+                document.body.appendChild(input);
+            }
         };
 
         video.addEventListener('play', () => {
@@ -53,6 +66,31 @@
             console.log('Sending pause event')
             ws.send(JSON.stringify({ event: 'pause' }));
         });
+
+        // Not sure about this part
+        function checkBuffering() {
+            const buffered = video.buffered;
+            if (buffered.length > 0) {
+                const bufferEnd = buffered.end(0);
+                const bufferStart = buffered.start(0);
+                const bufferDuration = bufferEnd - bufferStart;
+                console.log(`Buffer duration is ${bufferDuration} seconds`);
+
+                if (bufferDuration > 10) {
+                    isReady = true;
+                    loading.style.display = 'none';
+                    video.style.display = 'block';
+                } else {
+                    loading.style.display = 'block';
+                    video.style.display = 'none';
+                    setTimeout(checkBuffering, 1000);
+                }
+            } else {
+                loading.style.display = 'block';
+                video.style.display = 'none';
+                setTimeout(checkBuffering, 1000);
+            }
+        }
     </script>
 </body>
 </html>

@@ -2,6 +2,17 @@
 
 Toutes les modifications notables de ce projet seront documentées dans ce fichier.
 
+## [1.0.7]
+
+### Ajouté
+
+- Info de "chargement en cours" (basique) pour mettre plus de vidéo en cache avant lecture
+
+### Modifié
+
+- Téléchargement de plus de paquets pour moins de latence perceptible
+- Meilleur comptage du temps (pour meilleure synchronisation) => toutes les 1/2 secondes au lieu d'uniquement des secondes
+
 ## [1.0.6]
 
 ### Ajouté
