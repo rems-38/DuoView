@@ -8,6 +8,9 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 
 - Système de chat entre les utilisateurs
 
+### Modifié
+
+- Visuel de la page principale
 
 ## [1.0.7]
 

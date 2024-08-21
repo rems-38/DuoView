@@ -1,0 +1,76 @@
+/* Appliquer une hauteur de 100% à body et html */
+body, html {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    overflow: hidden;
+}
+
+.title {
+    text-align: center;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.bg-video {
+    position: fixed;
+    top: 10%;
+    left: 0.5%;
+    width: 75%;
+    height: 75%;
+    /* object-fit: cover; */
+}
+
+.chat-container {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 23%; /* Ajustez la largeur selon vos préférences */
+    height: 100%; /* Prend toute la hauteur de la page */
+    background: rgba(255, 255, 255, 0.8); /* Fond semi-transparent */
+    border-left: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    padding-right: 5px;
+}
+
+.system-message {
+    font-style: italic;
+    color: #6c757d;
+}
+
+.chat-input {
+    display: flex;
+    margin-top: 10px;
+}
+
+.chat-input input {
+    flex: 1;
+    border-radius: 0;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+
+.chat-input button {
+    border-radius: 0;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.chat-input input:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.chat-input button:focus {
+    outline: none;
+    box-shadow: none;
+}
