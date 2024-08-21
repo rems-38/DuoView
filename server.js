@@ -131,14 +131,18 @@ wss.on('connection', ws => {
     ws.send(JSON.stringify({ event: 'time', currentTime }));
 
     ws.on('message', message => {
-        const data = JSON.parse(message);
-
-        if (data.event === 'play') {
-            console.log('Play command received from client.');
-            controlPlayback('play');
-        } else if (data.event === 'pause') {
-            console.log('Pause command received from client.');
-            controlPlayback('pause');
+        try {
+            const data = JSON.parse(message);
+    
+            if (data.event === 'play') {
+                console.log('Play command received from client.');
+                controlPlayback('play');
+            } else if (data.event === 'pause') {
+                console.log('Pause command received from client.');
+                controlPlayback('pause');
+            }
+        } catch (error) {
+            console.error('Invalid JSON:', error);
         }
     });
 
