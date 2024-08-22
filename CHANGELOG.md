@@ -11,6 +11,7 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 ### Modifié
 
 - Visuel de la page principale
+- Animation de chargement (rond tournant plutôt qu'un texte)
 
 ## [1.0.7]
 

@@ -1,9 +1,13 @@
 /* Appliquer une hauteur de 100% à body et html */
+
 body, html {
     height: 100%;
     margin: 0;
     font-family: Arial, Helvetica, sans-serif;
     overflow: hidden;
+
+    /* Variables */
+    --width-chat: 23%;
 }
 
 .title {
@@ -12,12 +16,45 @@ body, html {
     margin-top: 10px;
 }
 
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: calc(100% - var(--width-chat));
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    position: absolute;
+    top: 47%;
+    left: 48.5%;
+    transform: translate(-50%, -50%);
+    border: 5px solid rgba(255, 255, 255, 0.3);
+    border-top: 5px solid #fff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
 .bg-video {
     position: fixed;
     top: 10%;
     left: 0.5%;
     width: 75%;
     height: 75%;
+    z-index: 1;
     /* object-fit: cover; */
 }
 
@@ -25,7 +62,7 @@ body, html {
     position: fixed;
     top: 0;
     right: 0;
-    width: 23%; /* Ajustez la largeur selon vos préférences */
+    width: var(--width-chat); /* Ajustez la largeur selon vos préférences */
     height: 100%; /* Prend toute la hauteur de la page */
     background: rgba(255, 255, 255, 0.8); /* Fond semi-transparent */
     border-left: 1px solid rgba(0, 0, 0, 0.1);
@@ -33,6 +70,7 @@ body, html {
     display: flex;
     flex-direction: column;
     padding: 15px;
+    z-index: 2;
 }
 
 .chat-messages {

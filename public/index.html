@@ -11,7 +11,10 @@
 <body>
     <h1 class="title">DuoView</h1>
 
-    <div id="loading" style="display: none;">Loading...</div>
+    <div id="loading" class="loading-container" style="display: none;">
+        <div class="loading-spinner"></div>
+    </div>
+
     <video id="video" controls preload="auto" class="bg-video">
         <source src="/video" type="video/mp4">
         Your browser does not support the video tag.
@@ -28,7 +31,7 @@
 
     <script>
         const video = document.getElementById('video');
-        const loading = document.getElementById('loading');
+        const loading = document.getElementById('loading');              
         const ws = new WebSocket(`ws://${window.location.host}`);
 
         ws.onopen = () => {

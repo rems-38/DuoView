@@ -20,12 +20,6 @@ let isPlaying = false;
 let clientsConnected = 0;
 let intervalId = null;
 
-const mimeTypes = {
-    '.mp4': 'video/mp4',
-    '.avi': 'video/x-msvideo',
-    '.mkv': 'video/x-matroska',
-};
-
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use((req, res, next) => {
