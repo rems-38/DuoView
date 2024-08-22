@@ -25,7 +25,11 @@ $(document).ready(() => {
     });
 
     socket.on('chat-message', (data) => {
-        $('#chat-messages').append(`<div><strong>${data.username}</strong> : ${data.message} <small class="text-muted">${data.time}</small></div>`);
+        if (data.username === username) {
+            $('#chat-messages').append(`<div class="self-message">${data.message} <small class="text-muted">${data.time}</small></div>`);
+        } else {
+            $('#chat-messages').append(`<div class="other-message"><strong>${data.username}</strong> : ${data.message} <small class="text-muted">${data.time}</small></div>`);
+        }
         $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
     });
 

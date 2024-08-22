@@ -8,6 +8,7 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 
 - Système de chat entre les utilisateurs
 - Appuie sur touche entrée pour envoyer le message 
+- Style du chat
 
 ### Modifié
 

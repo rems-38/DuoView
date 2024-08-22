@@ -27,7 +27,6 @@ body, html {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 1000;
-    pointer-events: none;
 }
 
 .loading-spinner {
@@ -64,30 +63,86 @@ body, html {
     right: 0;
     width: var(--width-chat); /* Ajustez la largeur selon vos préférences */
     height: 100%; /* Prend toute la hauteur de la page */
-    background: rgba(255, 255, 255, 0.8); /* Fond semi-transparent */
-    border-left: 1px solid rgba(0, 0, 0, 0.1);
-    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    padding: 15px;
+    background: #f8f9fa;
+    padding: 10px;
+    border-left: 2px solid #ddd;
     z-index: 2;
 }
 
-.chat-messages {
-    flex: 1;
-    overflow-y: auto;
+.chat-container h2 {
+    text-align: center;
     margin-bottom: 10px;
-    padding-right: 5px;
+}
+
+.chat-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
 }
 
 .system-message {
     font-style: italic;
+    text-align: center;
     color: #6c757d;
+    margin-bottom: 10px;
+}
+
+.self-message, .other-message {
+    max-width: 75%;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 15px;
+    position: relative;
+    word-wrap: break-word;
+    font-size: 14px;
+    line-height: 1.5;
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+.self-message {
+    background-color: #dcf8c6;
+    align-self: flex-end;
+    margin-left: auto;
+    border-radius: 15px 15px 0 15px;
+}
+
+.other-message {
+    background-color: #ffffff;
+    align-self: flex-start;
+    margin-right: auto;
+    border-radius: 15px 15px 15px 0;
+}
+
+.self-message.strong, .other-message.strong {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.self-message small, .other-message small {
+    display: block;
+    bottom: 5px;
+    right: 10px;
+    font-size: 10px;
+    color: #555;
 }
 
 .chat-input {
     display: flex;
-    margin-top: 10px;
+    gap: 5px;
+    padding: 10px 0;
+    background-color: #f8f9fa;
+    border-top: 1px solid #ddd;
 }
 
 .chat-input input {
