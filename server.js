@@ -4,7 +4,6 @@ const WebSocket = require('ws');
 const { Server } = require('socket.io');
 const path = require('path');
 const fs = require('fs');
-// const req = require('express/lib/request'); 
 const { spawn } = require('child_process');
 const moment = require('moment');
 
@@ -14,24 +13,20 @@ const wss = new WebSocket.Server({ server });
 const io = new Server(server);
 
 let videoPath = '';
-let contentType = '';
 let currentTime = 0;
-let isPlaying = false;
 let clientsConnected = 0;
 let intervalId = null;
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use((req, res, next) => {
+app.use((_, res, next) => {
     if (!videoPath) {
         return res.status(400).send('No video selected. Please select a video.');
     }
     next();
 });
 
-app.get('/video', (req, res) => {
-    const ext = path.extname(videoPath).toLowerCase();
-
+app.get('/video', (_, res) => {
     // Transcoding en temps réel vers MP4
     const ffmpeg = spawn('ffmpeg', [
         '-i', videoPath,
