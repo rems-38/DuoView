@@ -1,23 +1,66 @@
 /* Appliquer une hauteur de 100% à body et html */
 
-body, html {
-    height: 100%;
+body {
     margin: 0;
-    font-family: Arial, Helvetica, sans-serif;
+    padding: 0;
+    height: 100vh;
     overflow: hidden;
-
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(to bottom right, #1a1a1a, #333);
+    color: #fff;
+    
     /* Variables */
     --width-chat: 23%;
+    --height-chat: 85vh;
+}
+
+nav {
+    background-color: #1a1a1a;
+    padding: 15px 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+nav ul li {
+    margin: 0 15px;
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: #fff;
+    font-size: 16px;
+    transition: color 0.3s;
+}
+
+nav ul li a:hover {
+    color: #001dff;
 }
 
 .title {
-    text-align: center;
+    font-size: 24px;
     font-weight: bold;
-    margin-top: 10px;
+    letter-spacing: 1.5px;
+    background: -webkit-linear-gradient(45deg, #001dff, #00ff85);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .loading-container {
-    display: flex;
+    top: 7.43%;
     justify-content: center;
     align-items: center;
     position: absolute;
@@ -47,14 +90,15 @@ body, html {
     100% { transform: rotate(360deg); }
 }
 
-.bg-video {
+#video {
+    display: block;
     position: fixed;
-    top: 10%;
     left: 0.5%;
-    width: 75%;
-    height: 75%;
-    z-index: 1;
-    /* object-fit: cover; */
+    margin: auto;
+    margin-top: 9%;
+    max-width: calc(100% - var(--width-chat) - 3%);
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
 }
 
 .chat-toggle {

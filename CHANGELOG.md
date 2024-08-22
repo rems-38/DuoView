@@ -8,6 +8,10 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 
 - Possibilité de masquer le chat
 
+### Modifié
+
+- Visuel de la page (moderne)
+- Positionnement de la vidéo
 
 ## [1.0.8]
 
