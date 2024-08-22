@@ -7,6 +7,7 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 ### Ajouté
 
 - Système de chat entre les utilisateurs
+- Appuie sur touche entrée pour envoyer le message 
 
 ### Modifié
 

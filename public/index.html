@@ -24,8 +24,8 @@
         <h2>Chat</h2>
         <div id="chat-messages" class="chat-messages"></div>
         <div class="chat-input">
-            <input type="text" id="chat-input" class="form-control" placeholder="Type a message...">
-            <button id="send-button" class="btn btn-primary">Send</button>
+            <input type="text" id="chat-input" class="form-control" placeholder="Entrez votre message...">
+            <button id="send-button" class="btn btn-primary">Envoyer</button>
         </div>
     </div>
 
@@ -119,11 +119,22 @@
             username = prompt('Enter your username :');
             socket.emit('user-connected', username);
 
-            $('#send-button').click(() => {
+            function sendMessage() {
                 const message = $('#chat-input').val();
                 if (message.trim() !== '') {
                     socket.emit('chat-message', {username, message});
                     $('#chat-input').val('');
+                }
+            }
+
+            $('#send-button').click(() => {
+                sendMessage();
+            });
+            
+            $('#chat-input').keydown((event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault(); // Empêche l'ajout d'une nouvelle ligne dans le champ texte
+                    sendMessage();
                 }
             });
 
