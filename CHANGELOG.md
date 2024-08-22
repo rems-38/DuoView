@@ -13,6 +13,7 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 
 - Visuel de la page principale
 - Animation de chargement (rond tournant plutôt qu'un texte)
+- Code JS dans des fichiers séparés
 
 ## [1.0.7]
 
