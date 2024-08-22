@@ -12,6 +12,7 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 
 - Visuel de la page (moderne)
 - Positionnement de la vidéo
+- Aspect du fond du loading
 
 ## [1.0.8]
 
