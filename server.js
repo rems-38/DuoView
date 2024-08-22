@@ -38,73 +38,41 @@ app.use((req, res, next) => {
 app.get('/video', (req, res) => {
     const ext = path.extname(videoPath).toLowerCase();
 
-    if (ext === '.avi' || ext === '.mkv') {
-        // Transcoding en temps réel vers MP4
-        const ffmpeg = spawn('ffmpeg', [
-            '-i', videoPath,
-            '-ss', currentTime,		// Démarrer la lecture à partir de currentTime
-            '-f', 'mp4',			// Format de sortie
-            '-vcodec', 'libx264',	// Codec vidéo
-            '-preset', 'fast',		// Préréglage pour la vitesse
-            '-movflags', 'frag_keyframe+empty_moov',
-            '-r', '30',				// Frame rate
-            '-g', '52',				// Intervalle de groupes d'images
-            '-sc_threshold', '0',
-            '-c:a', 'aac',			// Codec audio
-            '-b:a', '128k',
-            '-c:v', 'libx264',
-            '-tune', 'zerolatency',
-            '-vf', 'scale=640:-2',
-            '-crf', '28',
-            '-max_muxing_queue_size', '9999',
-            '-bufsize', '20m',		// Taille du buffer
-            '-s', '1280x720',		// Résolution
-            'pipe:1'				// Sortie vers le pipe
-        ]);
+    // Transcoding en temps réel vers MP4
+    const ffmpeg = spawn('ffmpeg', [
+        '-i', videoPath,
+        '-ss', currentTime,		// Démarrer la lecture à partir de currentTime
+        '-f', 'mp4',			// Format de sortie
+        '-vcodec', 'libx264',	// Codec vidéo
+        '-preset', 'fast',		// Préréglage pour la vitesse
+        '-movflags', 'frag_keyframe+empty_moov',
+        '-r', '30',				// Frame rate
+        '-g', '52',				// Intervalle de groupes d'images
+        '-sc_threshold', '0',
+        '-c:a', 'aac',			// Codec audio
+        '-b:a', '128k',
+        '-c:v', 'libx264',
+        '-tune', 'zerolatency',
+        '-vf', 'scale=640:-2',
+        '-crf', '28',
+        '-max_muxing_queue_size', '9999',
+        '-bufsize', '20m',		// Taille du buffer
+        '-s', '1280x720',		// Résolution
+        'pipe:1'				// Sortie vers le pipe
+    ]);
 
-        res.setHeader('Content-Type', 'video/mp4');
+    res.setHeader('Content-Type', 'video/mp4');
 
-        // Envoyer la sortie FFmpeg directement à la réponse HTTP
-        ffmpeg.stdout.pipe(res);
+    // Envoyer la sortie FFmpeg directement à la réponse HTTP
+    ffmpeg.stdout.pipe(res);
 
-        ffmpeg.stderr.on('data', (data) => {
-            // 
-            // console.error(`FFmpeg stderr: ${data}`);
-        });
+    ffmpeg.stderr.on('data', (data) => {
+        // console.error(`FFmpeg stderr: ${data}`);
+    });
 
-        ffmpeg.on('close', (code) => {
-            console.log(`FFmpeg process exited with code ${code}`);
-        });
-
-    } else {
-        // Gérer les vidéos mp4 de manière classique
-        const stat = fs.statSync(videoPath);
-        const fileSize = stat.size;
-        const range = req.headers.range;
-
-        if (range) {
-            const parts = range.replace(/bytes=/, "").split("-");
-            const start = parseInt(parts[0], 10);
-            const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
-            const chunksize = (end - start) + 1;
-            const file = fs.createReadStream(videoPath, { start, end });
-            const head = {
-                'Content-Range': `bytes ${start}-${end}/${fileSize}`,
-                'Accept-Ranges': 'bytes',
-                'Content-Length': chunksize,
-                'Content-Type': 'video/mp4',
-            };
-            res.writeHead(206, head);
-            file.pipe(res);
-        } else {
-            const head = {
-                'Content-Length': fileSize,
-                'Content-Type': 'video/mp4',
-            };
-            res.writeHead(200, head);
-            fs.createReadStream(videoPath).pipe(res);
-        }
-    }
+    ffmpeg.on('close', (code) => {
+        console.log(`FFmpeg process exited with code ${code}`);
+    });
 });
 
 io.on('connection', socket => {
